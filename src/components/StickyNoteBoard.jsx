@@ -9,6 +9,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import StickyNoteNode from './StickyNoteNode';
+import AIChatPanel from './AIChatPanel';
 
 const nodeTypes = {
   stickyNote: StickyNoteNode
@@ -36,6 +37,15 @@ const StickyNoteBoard = () => {
     setNodes((nds) => [...nds, newNode]);
   }, [nodes, setNodes]);
 
+  const handleGraphData = (graphData) => {
+    if (graphData.nodes) {
+      setNodes((nds) => [...nds, ...graphData.nodes]);
+    }
+    if (graphData.edges) {
+      setEdges((eds) => [...eds, ...graphData.edges]);
+    }
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
       <button 
@@ -62,6 +72,7 @@ const StickyNoteBoard = () => {
         <Controls />
         <MiniMap />
       </ReactFlow>
+      <AIChatPanel onGraphDataReceived={handleGraphData} />
     </div>
   );
 };
