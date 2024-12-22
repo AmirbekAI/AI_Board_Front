@@ -24,31 +24,41 @@ const SignupPage = () => {
   });
   const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Signup form submitted');
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
 
     try {
-      console.log('Attempting registration with:', { email, password, fullName });
-      await authService.register({
-        email,
-        password,
-        fullName
+      const registrationData = {
+        email: formData.email,
+        password: formData.password,
+        fullName: formData.fullName
+      };
+
+      console.log('Attempting registration with:', {
+        email: registrationData.email,
+        fullName: registrationData.fullName
       });
+
+      await authService.register(registrationData);
       console.log('Registration successful');
       navigate('/login');
     } catch (error) {
-      console.error('Detailed signup error:', error);
-      console.error('Error response:', error.response);
-      setError(error.message || 'Failed to register');
+      console.error('Registration failed:', error.message);
+      setError(error.response?.data?.message || 'Failed to register');
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
 
   return (
