@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { generateGraph } from '../services/openai';
+import { boardService } from '../services/api';
 import { arrangeNodes } from '../utils/layoutUtils';
 
 const ChatPanel = styled.div`
@@ -258,32 +258,26 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
     scrollToBottom();
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { text: userMessage, isUser: true }]);
-    setIsLoading(true);
-
+  const handleSendMessage = async (userMessage) => {
     try {
-      const graphData = await generateGraph(userMessage);
-      const arrangedGraphData = arrangeNodes(graphData);
-      
-      setMessages(prev => [...prev, { 
-        text: 'Graph generated successfully! You can now see the concept map on the canvas.', 
-        isUser: false 
-      }]);
-      
-      if (arrangedGraphData) {
-        onGraphDataReceived(arrangedGraphData);
+      setIsLoading(true);
+      const response = await boardService.getAIResponse([
+        ...messages,
+        { role: 'user', content: userMessage }
+      ]);
+
+      // Handle response
+      if (response.graphData) {
+        onGraphDataReceived(response.graphData);
       }
+
+      setMessages(prevMessages => [
+        ...prevMessages,
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: response.message }
+      ]);
     } catch (error) {
-      console.error('Error:', error);
-      setMessages(prev => [...prev, { 
-        text: `Error: ${error.message || 'Unknown error occurred'}`, 
-        isUser: false 
-      }]);
+      console.error('Error sending message:', error);
     } finally {
       setIsLoading(false);
     }
@@ -292,7 +286,7 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSendMessage(input);
     }
   };
 
@@ -325,8 +319,8 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
         </ChatHeader>
         <ChatMessages>
           {messages.map((message, index) => (
-            <Message key={index} isUser={message.isUser}>
-              {message.text}
+            <Message key={index} isUser={message.role === 'user'}>
+              {message.content}
             </Message>
           ))}
           {isLoading && (
@@ -344,7 +338,7 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
             placeholder="Describe a concept to visualize..."
             disabled={isLoading}
           />
-          <SendButton onClick={sendMessage} disabled={isLoading}>
+          <SendButton onClick={() => handleSendMessage(input)} disabled={isLoading}>
             {isLoading ? (
               <>Processing<LoadingDots/></>
             ) : (

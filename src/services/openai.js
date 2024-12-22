@@ -1,14 +1,7 @@
 import OpenAI from 'openai';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-console.log('API Key available:', !!apiKey);
-
-if (!apiKey) {
-  throw new Error('OpenAI API key is not configured in environment variables');
-}
-
-const openai = new OpenAI({
-  apiKey: apiKey,
+const openai = new OpenAI({ 
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 });
 

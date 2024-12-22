@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -8,6 +8,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true
 });
 
 // Add token to requests
@@ -166,5 +167,15 @@ export const boardService = {
 
   deleteEdge: async (boardId, edgeId) => {
     await api.delete(`/boards/${boardId}/edges/${edgeId}`);
+  },
+
+  async getAIResponse(messages) {
+    try {
+      const response = await api.post('/ai/chat', { messages });
+      return response.data;
+    } catch (error) {
+      console.error('AI chat error:', error);
+      throw error;
+    }
   }
 }; 
