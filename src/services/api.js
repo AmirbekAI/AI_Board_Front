@@ -18,10 +18,13 @@ const api = axios.create({
   validateStatus: status => status < 500
 });
 
-// Add CORS headers to all requests
+// Update interceptor to include more headers
 api.interceptors.request.use(config => {
   config.headers['Access-Control-Allow-Credentials'] = true;
+  config.headers['Access-Control-Allow-Origin'] = '*';
   return config;
+}, error => {
+  return Promise.reject(error);
 });
 
 // Add token to requests
