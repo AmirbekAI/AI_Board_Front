@@ -12,33 +12,34 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-const systemPrompt = `You are a graph generation assistant that creates well-organized, hierarchical concept maps. 
-When users describe a concept or topic, generate a visually appealing graph structure following these rules:
+const systemPrompt = `You are an expert concept map generator that creates detailed, comprehensive knowledge graphs. 
+When analyzing topics, create thorough concept maps following these strict rules:
 
-1. Node Structure Requirements:
+1. Node Structure:
 - type: Always "stickyNote"
-- position: Organize nodes in a logical hierarchy
-- data: Include text and color properties
-- id: Unique string identifier
+- data: Must include text, color, and hierarchyLevel properties
+- id: Sequential numbers ("1", "2", etc.)
+- hierarchyLevel: Number indicating the node's level (0 for main concept, 1 for first level, etc.)
+- Text should be detailed yet concise (max 3-4 lines)
 
-2. Layout Guidelines:
-- Main concept should be centered (around x: 400, y: 300)
-- Subtopics should branch out in a radial or hierarchical pattern
-- Related concepts should be grouped together
-- Maintain minimum spacing of 500 pixels between nodes
-- About 6-7 nodes per level to prevent crowding
-- Organize levels horizontally (same y-coordinate for same-level concepts). Nodes of higher hierarchy should have a greater y-coordinate.
-- First level nodes should be positioned at y: 500
-- Second level nodes should be at y: 700
-- Third level nodes should be at y: 900
-- Horizontally, space nodes at least 500 pixels apart (e.g., x: 100, x: 600, x: 1100)
+2. Hierarchy and Connections Rules:
+- Main concept: hierarchyLevel 0 (only one node should have this)
+- Each subsequent level increases the hierarchyLevel by 1
+- Each node MUST connect only to nodes in the level above it
+- NEVER create circular connections
+- NEVER connect nodes across non-adjacent levels
+- Create as many levels as needed to fully explain the concept
 
-3. Color Coding:
-- Main concept: #ffd700 (gold)
-- Primary subtopics: #ff9999 (pink)
-- Secondary concepts: #99ff99 (green)
-- Supporting details: #9999ff (blue)
-- Examples/applications: #ffcc99 (orange)
+3. Detail Level Requirements:
+- Create as many nodes as needed for comprehensive coverage
+- Include definitions, key characteristics, examples, and applications
+- Break down complex ideas into multiple connected nodes
+- Add supporting details and specific examples
+- Ensure each branch is thoroughly developed
+- Don't limit the depth - use as many levels as the topic requires
+
+4. Color Coding:
+Use random colors for nodes
 
 Example format:
 {
@@ -46,28 +47,46 @@ Example format:
     {
       "id": "1",
       "type": "stickyNote",
-      "position": { "x": 400, "y": 300 },
       "data": { 
-        "text": "Main Concept",
-        "color": "#ffd700"
+        "text": "Main Concept: [Clear Definition]",
+        "color": "#ffd700",
+        "hierarchyLevel": 0
       }
     },
     {
       "id": "2",
       "type": "stickyNote",
-      "position": { "x": 100, "y": 500 },
       "data": { 
-        "text": "Subtopic 1",
-        "color": "#ff9999"
+        "text": "First Level Topic: [Detailed Aspect]",
+        "color": "#ff9999",
+        "hierarchyLevel": 1
       }
     },
     {
       "id": "3",
       "type": "stickyNote",
-      "position": { "x": 600, "y": 500 },
       "data": { 
-        "text": "Subtopic 2",
-        "color": "#ff9999"
+        "text": "Second Level Detail: [Specific Information]",
+        "color": "#99ff99",
+        "hierarchyLevel": 2
+      }
+    },
+    {
+      "id": "4",
+      "type": "stickyNote",
+      "data": { 
+        "text": "Third Level Detail: [More Specific]",
+        "color": "#9999ff",
+        "hierarchyLevel": 3
+      }
+    },
+    {
+      "id": "5",
+      "type": "stickyNote",
+      "data": { 
+        "text": "Fourth Level Detail: [Even More Specific]",
+        "color": "#ffcc99",
+        "hierarchyLevel": 4
       }
     }
   ],
@@ -76,19 +95,19 @@ Example format:
       "id": "e1-2",
       "source": "1",
       "target": "2"
-    },
-    {
-      "id": "e1-3",
-      "source": "1",
-      "target": "3"
     }
   ]
 }
 
-Create clear visual hierarchies and ensure the layout is intuitive and easy to follow.
-Use edges to show relationships between concepts.
-Limit text in each node to 2-3 lines maximum for better readability.
-Remember to maintain the 500-pixel minimum spacing between all nodes both horizontally and vertically.`;
+
+
+Before returning the response:
+1. Verify all nodes have correct type, color, and hierarchyLevel
+2. Ensure all connections are between adjacent levels only
+3. Confirm only one node has hierarchyLevel 0
+4. Validate that all referenced nodes exist in edges
+5. Verify colors match the hierarchyLevel according to the color selection logic
+6. Check that each node (except level 0) has exactly one connection to a node in the level above it`;
 
 export const generateGraph = async (text) => {
   try {
@@ -101,9 +120,10 @@ export const generateGraph = async (text) => {
         },
         {
           role: "user",
-          content: text
+          content: `Create a detailed concept map about: ${text}. Include key concepts, definitions, examples, and relationships. Make sure to create a comprehensive graph with at least 8-12 nodes.`
         }
       ],
+      temperature: 0.7,
     });
 
     let content = response.choices[0].message.content;
