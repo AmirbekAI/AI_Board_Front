@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, useStore } from 'reactflow';
 import styled from '@emotion/styled';
 import NoteToolbar from './NoteToolbar';
 
@@ -32,6 +32,9 @@ const StickyNoteNode = ({ data, isConnectable }) => {
   const [format, setFormat] = useState('normal');
   const [text, setText] = useState(data.text);
   const wrapperRef = useRef(null);
+
+  // Get the current zoom level from React Flow
+  const zoom = useStore((state) => state.transform[2]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -72,7 +75,8 @@ const StickyNoteNode = ({ data, isConnectable }) => {
     const rect = wrapperRef.current.getBoundingClientRect();
     return {
       x: rect.width / 2,
-      y: -60
+      y: -60,
+      scale: 1 / zoom // Pass the inverse of zoom as scale
     };
   };
 

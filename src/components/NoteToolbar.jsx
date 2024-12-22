@@ -12,6 +12,7 @@ const ToolbarWrapper = styled.div`
   gap: 12px;
   align-items: center;
   border: 1px solid #eee;
+  transform-origin: center bottom;
 `;
 
 const Divider = styled.div`
@@ -73,10 +74,15 @@ const ButtonGroup = styled.div`
 const NoteToolbar = ({ position, onColorChange, onFormatChange, currentColor, currentFormat, className }) => {
   const colors = ['#ffd700', '#ff9999', '#99ff99', '#9999ff', '#ffcc99'];
   const formats = ['normal', 'bold', 'italic'];
+  const { x, y, scale = 1 } = position;
 
   return (
     <ToolbarWrapper 
-      style={{ top: position.y, left: position.x }}
+      style={{ 
+        top: y,
+        left: x,
+        transform: `translate(-50%, -100%) scale(${scale})`
+      }}
       className={`note-toolbar ${className || ''}`}
     >
       <ButtonGroup>
