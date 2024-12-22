@@ -14,20 +14,10 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
-  validateStatus: status => status < 500
+  withCredentials: false
 });
 
-// Update interceptor to include more headers
-api.interceptors.request.use(config => {
-  config.headers['Access-Control-Allow-Credentials'] = true;
-  config.headers['Access-Control-Allow-Origin'] = '*';
-  return config;
-}, error => {
-  return Promise.reject(error);
-});
-
-// Add token to requests
+// Remove the CORS headers from frontend
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
