@@ -33,21 +33,21 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
+    console.log('Signup form submitted');
 
     try {
-      // Remove confirmPassword before sending to API
-      const { confirmPassword, ...signupData } = formData;
-      await authService.register(signupData);
-      navigate('/profile');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
-      console.error('Signup error:', err);
+      console.log('Attempting registration with:', { email, password, fullName });
+      await authService.register({
+        email,
+        password,
+        fullName
+      });
+      console.log('Registration successful');
+      navigate('/login');
+    } catch (error) {
+      console.error('Detailed signup error:', error);
+      console.error('Error response:', error.response);
+      setError(error.message || 'Failed to register');
     }
   };
 

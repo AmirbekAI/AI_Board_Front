@@ -1,7 +1,13 @@
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
-console.log('Using API URL:', API_BASE_URL);
+console.log('API Configuration:', {
+  baseURL: API_BASE_URL,
+  envVars: {
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    mode: import.meta.env.MODE // Will show if we're in development or production
+  }
+});
 
 // Create axios instance with default config
 const api = axios.create({
@@ -31,20 +37,28 @@ export const authService = {
 
   register: async (userData) => {
     try {
+      console.log('Making registration request to:', API_BASE_URL + '/auth/register'); // Debug log
+      
       const response = await api.post('/auth/register', {
         email: userData.email,
         password: userData.password,
         fullName: userData.fullName
       });
       
-      // Store the token
+      console.log('Registration response:', response.data); // Debug log
+      
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
       }
       
       return response.data;
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error.message);
+      console.error('Registration error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config
+      });
       throw error;
     }
   },
