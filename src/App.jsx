@@ -1,11 +1,9 @@
 import React from 'react';
-import StickyBoard from './components/StickyBoard';
+import StickyNoteBoard from './components/StickyNoteBoard';
 
 function App() {
   return (
-    <div className="App">
-      <StickyBoard />
-    </div>
+    <StickyNoteBoard />
   );
 }
 

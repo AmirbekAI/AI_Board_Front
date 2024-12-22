@@ -84,12 +84,15 @@ const ButtonGroup = styled.div`
   gap: 8px;
 `;
 
-const NoteToolbar = ({ position, onColorChange, onFormatChange, currentColor, currentFormat }) => {
+const NoteToolbar = ({ position, onColorChange, onFormatChange, currentColor, currentFormat, className }) => {
   const colors = ['#ffd700', '#ff9999', '#99ff99', '#9999ff', '#ffcc99'];
   const formats = ['normal', 'bold', 'italic'];
 
   return (
-    <ToolbarWrapper style={{ top: position.y, left: position.x }}>
+    <ToolbarWrapper 
+      style={{ top: position.y, left: position.x }}
+      className={`note-toolbar ${className || ''}`}
+    >
       <ButtonGroup>
         {colors.map(color => (
           <ColorButton
