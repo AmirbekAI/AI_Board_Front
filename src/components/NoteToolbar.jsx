@@ -12,20 +12,6 @@ const ToolbarWrapper = styled.div`
   gap: 12px;
   align-items: center;
   border: 1px solid #eee;
-  
-  &:before {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid white;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-  }
 `;
 
 const Divider = styled.div`

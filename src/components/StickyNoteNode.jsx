@@ -58,8 +58,13 @@ const StickyNoteNode = ({ data, isConnectable }) => {
   };
 
   const handleNoteClick = (e) => {
-    e.stopPropagation();
+    if (e.target.classList.contains('react-flow__handle')) return;
     setShowToolbar(true);
+  };
+
+  const handleTextareaClick = (e) => {
+    e.stopPropagation();
+    handleNoteClick(e);
   };
 
   const getToolbarPosition = () => {
@@ -86,7 +91,7 @@ const StickyNoteNode = ({ data, isConnectable }) => {
         value={text}
         onChange={handleChange}
         format={format}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleTextareaClick}
       />
       <Handle 
         type="source" 
