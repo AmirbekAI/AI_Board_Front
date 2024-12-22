@@ -5,17 +5,23 @@ console.log('API Configuration:', {
   baseURL: API_BASE_URL,
   envVars: {
     VITE_API_URL: import.meta.env.VITE_API_URL,
-    mode: import.meta.env.MODE // Will show if we're in development or production
+    mode: import.meta.env.MODE
   }
 });
 
-// Create axios instance with default config
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true
+  withCredentials: true,
+  validateStatus: status => status < 500
+});
+
+// Add CORS headers to all requests
+api.interceptors.request.use(config => {
+  config.headers['Access-Control-Allow-Credentials'] = true;
+  return config;
 });
 
 // Add token to requests
