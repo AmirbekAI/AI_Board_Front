@@ -243,7 +243,7 @@ const LoadingDots = styled.span`
   }
 `;
 
-const AIChatPanel = ({ onGraphDataReceived }) => {
+const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -257,6 +257,16 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Debug log when component mounts
+  useEffect(() => {
+    if (debug) {
+      console.log('AIChatPanel mounted with props:', {
+        hasCallback: !!onGraphDataReceived,
+        boardId
+      });
+    }
+  }, [debug, onGraphDataReceived, boardId]);
 
   const handleSendMessage = async (userMessage) => {
     try {
@@ -295,44 +305,33 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
     if (!input.trim()) return;
 
     try {
+      console.log('Submit handler called');
       setMessages(prev => [...prev, { role: 'user', content: input }]);
       setInput('');
       
-      console.log('1. Sending message to AI:', input);
       const response = await boardService.getAIResponse([{ role: 'user', content: input }]);
-      console.log('2. Raw AI Response:', response);
+      console.log('AI Response received:', response);
       
-      // Make sure we're getting the graph data correctly
       const graphData = response.graphData || response;
-      console.log('3. Graph data to be processed:', graphData);
+      console.log('Graph data extracted:', graphData);
       
       if (graphData && graphData.nodes && graphData.edges) {
-        console.log('4. About to call onGraphDataReceived');
-        console.log('onGraphDataReceived type:', typeof onGraphDataReceived);
+        console.log('Attempting to call onGraphDataReceived');
+        if (typeof onGraphDataReceived !== 'function') {
+          console.error('onGraphDataReceived is not a function!', onGraphDataReceived);
+          return;
+        }
         
         try {
           await onGraphDataReceived(graphData);
-          console.log('5. Successfully called onGraphDataReceived');
+          console.log('onGraphDataReceived called successfully');
         } catch (callbackError) {
-          console.error('Error calling onGraphDataReceived:', callbackError);
+          console.error('Error in onGraphDataReceived:', callbackError);
         }
-      } else {
-        console.error('Invalid graph data structure:', graphData);
       }
 
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: 'Generated a concept map based on your input.' 
-      }]);
-
     } catch (error) {
-      console.error('Error in chat:', error);
-      console.error('Full error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      setError('Failed to get AI response');
+      console.error('Error in handleSubmit:', error);
     }
   };
 

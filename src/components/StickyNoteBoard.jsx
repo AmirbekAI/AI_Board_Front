@@ -156,6 +156,11 @@ const StickyNoteBoardContent = () => {
   const reactFlowInstance = useReactFlow();
   const [loading, setLoading] = useState(false);
 
+  // Debug log when component mounts
+  useEffect(() => {
+    console.log('StickyNoteBoard mounted');
+  }, []);
+
   // Define handlers first
   const handleNodeTextChange = useCallback(async (nodeId, newText) => {
     try {
@@ -211,11 +216,10 @@ const StickyNoteBoardContent = () => {
 
   // Then define handleGraphData using the handlers
   const handleGraphData = useCallback(async (data) => {
+    console.log('handleGraphData called with:', data);
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('1. Starting handleGraphData with:', data);
       
       if (!data || !data.nodes) {
         console.error('Invalid graph data structure:', data);
@@ -223,57 +227,27 @@ const StickyNoteBoardContent = () => {
         return;
       }
 
-      // Clear existing nodes and edges first
-      console.log('2. Clearing existing nodes and edges');
-      setNodes([]);
-      setEdges([]);
-
       // Use arrangeNodes from layoutUtils
-      console.log('3. Calling arrangeNodes');
       const arrangedData = arrangeNodes(data);
-      console.log('4. After arrangeNodes:', arrangedData);
+      console.log('Arranged data:', arrangedData);
       
-      // Format nodes with all required properties
-      const formattedNodes = arrangedData.nodes.map(node => {
-        const formattedNode = {
-          id: node.id,
-          type: 'stickyNote',
-          position: node.position,
-          data: {
-            text: node.data.text,
-            color: node.data.color || '#ffd700',
-            hierarchyLevel: node.data.hierarchyLevel,
-            onColorChange: (color) => handleNodeColorChange(node.id, color),
-            onTextChange: (text) => handleNodeTextChange(node.id, text)
-          }
-        };
-        console.log(`5. Formatted node ${node.id}:`, formattedNode);
-        return formattedNode;
-      });
+      const formattedNodes = arrangedData.nodes.map(node => ({
+        id: node.id,
+        type: 'stickyNote',
+        position: node.position,
+        data: {
+          text: node.data.text,
+          color: node.data.color || '#ffd700',
+          hierarchyLevel: node.data.hierarchyLevel
+        }
+      }));
 
-      console.log('6. Setting formatted nodes:', formattedNodes);
+      console.log('Setting nodes:', formattedNodes);
       setNodes(formattedNodes);
 
       if (arrangedData.edges) {
-        const formattedEdges = arrangedData.edges.map(edge => ({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          type: 'default',
-          animated: true,
-          style: { stroke: '#000000' }
-        }));
-        
-        console.log('7. Setting formatted edges:', formattedEdges);
-        setEdges(formattedEdges);
+        setEdges(arrangedData.edges);
       }
-
-      // Fit view after a small delay to ensure nodes are rendered
-      console.log('8. Scheduling fitView');
-      setTimeout(() => {
-        console.log('9. Executing fitView');
-        reactFlowInstance.fitView();
-      }, 100);
 
     } catch (err) {
       console.error('Error in handleGraphData:', err);
@@ -281,7 +255,12 @@ const StickyNoteBoardContent = () => {
     } finally {
       setLoading(false);
     }
-  }, [setNodes, setEdges, handleNodeColorChange, handleNodeTextChange, reactFlowInstance]);
+  }, [setNodes, setEdges]);
+
+  // Debug log whenever handleGraphData changes
+  useEffect(() => {
+    console.log('handleGraphData function updated');
+  }, [handleGraphData]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({
@@ -419,41 +398,22 @@ const StickyNoteBoardContent = () => {
   return (
     <HandlerContext.Provider value={handlers}>
       <FlowWrapper>
-        {loading && <LoadingSpinner />}
-        <ButtonGroup>
-          <BackButton onClick={() => navigate('/profile')}>
-            Back to Profile
-          </BackButton>
-          <BackButton onClick={addNewNote}>
-            Add Note
-          </BackButton>
-        </ButtonGroup>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodesDelete={onNodesDelete}
-          onEdgesDelete={onEdgesDelete}
           nodeTypes={nodeTypes}
-          defaultEdgeOptions={defaultEdgeOptions}
-          onNodeDragStop={(e, node) => handleNodeChange(node)}
           fitView
         >
-          <Background color="#aaaaaa" style={{ background: 'white' }} />
+          <Background />
           <Controls />
-          <StyledMiniMap 
-            nodeColor={node => node.data.color || '#fff'}
-            style={{ backgroundColor: 'white' }}
-            zoomable
-            pannable
-          />
         </ReactFlow>
         <AIChatPanel 
           onGraphDataReceived={handleGraphData} 
           boardId={boardId}
+          // Add debug prop
+          debug={true}
         />
       </FlowWrapper>
     </HandlerContext.Provider>
