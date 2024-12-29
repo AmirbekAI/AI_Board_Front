@@ -26,70 +26,46 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Add request interceptor to log all API calls
+api.interceptors.request.use(config => {
+  console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+  return config;
+});
+
 // Auth services
 export const authService = {
-  login: async (credentials) => {
-    const response = await api.post('/auth/login', credentials);
-    localStorage.setItem('token', response.data.token);
-    return response.data;
-  },
-
   register: async (userData) => {
     try {
-      console.log('Making registration request to:', API_BASE_URL + '/auth/register');
-      console.log('Request payload:', {
-        ...userData,
-        password: '[REDACTED]'
-      });
-      
-      const response = await api.post('/auth/register', {
-        username: userData.email, // Try with username if backend expects it
+      console.log('Registration endpoint:', `${API_BASE_URL}/api/auth/register`);
+      const response = await api.post('/api/auth/register', {
         email: userData.email,
         password: userData.password,
-        name: userData.fullName // Try with name if backend expects it
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
+        fullName: userData.fullName
       });
-      
-      console.log('Registration response:', response.data);
-      
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-      
       return response.data;
     } catch (error) {
-      // Enhanced error logging
       console.error('Registration error details:', {
+        endpoint: `${API_BASE_URL}/api/auth/register`,
         message: error.message,
         response: {
           data: error.response?.data,
           status: error.response?.status,
           statusText: error.response?.statusText
-        },
-        request: {
-          url: error.config?.url,
-          method: error.config?.method,
-          data: error.config?.data,
-          headers: error.config?.headers
         }
       });
-      
-      // More descriptive error message
-      const errorMessage = 
-        error.response?.data?.message ||
-        error.response?.data ||
-        (error.response?.status === 500 ? 'Server error - Please try again later' : error.message) ||
-        'Registration failed';
-
-      throw new Error(errorMessage);
+      throw new Error(error.response?.data?.message || 'Registration failed');
     }
   },
 
+  login: async (credentials) => {
+    console.log('Login endpoint:', `${API_BASE_URL}/api/auth/login`);
+    const response = await api.post('/api/auth/login', credentials);
+    localStorage.setItem('token', response.data.token);
+    return response.data;
+  },
+
   logout: () => {
+    console.log('Logging out - clearing token');
     localStorage.removeItem('token');
   }
 };
@@ -97,11 +73,13 @@ export const authService = {
 // Board services
 export const boardService = {
   getAllBoards: async () => {
+    console.log('Get all boards endpoint:', `${API_BASE_URL}/boards`);
     const response = await api.get('/boards');
     return response.data;
   },
 
   createBoard: async (boardData) => {
+    console.log('Create board endpoint:', `${API_BASE_URL}/boards`);
     const response = await api.post('/boards', boardData);
     return response.data;
   },
