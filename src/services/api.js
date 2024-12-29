@@ -73,34 +73,34 @@ export const authService = {
 // Board services
 export const boardService = {
   getAllBoards: async () => {
-    console.log('Get all boards endpoint:', `${API_BASE_URL}/boards`);
+    console.log('Get all boards endpoint:', `${API_BASE_URL}/api/boards`);
     const response = await api.get('/boards');
     return response.data;
   },
 
   createBoard: async (boardData) => {
-    console.log('Create board endpoint:', `${API_BASE_URL}/boards`);
-    const response = await api.post('/boards', boardData);
+    console.log('Create board endpoint:', `${API_BASE_URL}/api/boards`);
+    const response = await api.post('api/boards', boardData);
     return response.data;
   },
 
   updateBoard: async (boardId, boardData) => {
-    const response = await api.put(`/boards/${boardId}`, boardData);
+    const response = await api.put(`api/boards/${boardId}`, boardData);
     return response.data;
   },
 
   deleteBoard: async (boardId) => {
-    await api.delete(`/boards/${boardId}`);
+    await api.delete(`api/boards/${boardId}`);
   },
 
   getBoardNotes: async (boardId) => {
-    const response = await api.get(`/boards/${boardId}/notes`);
+    const response = await api.get(`api/boards/${boardId}/notes`);
     return response.data;
   },
 
   createNote: async (boardId, noteData) => {
     try {
-      const response = await api.post(`/boards/${boardId}/notes`, {
+      const response = await api.post(`api/boards/${boardId}/notes`, {
         content: noteData.content,
         color: noteData.color || '#ffd700', // Default yellow color
         positionX: noteData.positionX,
@@ -115,7 +115,7 @@ export const boardService = {
 
   updateNote: async (boardId, noteId, noteData) => {
     try {
-      const response = await api.put(`/boards/${boardId}/notes/${noteId}`, {
+      const response = await api.put(`api/boards/${boardId}/notes/${noteId}`, {
         content: noteData.content,
         color: noteData.color,
         positionX: noteData.positionX,
@@ -129,12 +129,12 @@ export const boardService = {
   },
 
   deleteNote: async (boardId, noteId) => {
-    await api.delete(`/boards/${boardId}/notes/${noteId}`);
+    await api.delete(`api/boards/${boardId}/notes/${noteId}`);
   },
 
   getBoardEdges: async (boardId) => {
     try {
-      const response = await api.get(`/boards/${boardId}/edges`);
+      const response = await api.get(`api/boards/${boardId}/edges`);
       return response.data.map(edge => ({
         id: edge.id,
         sourceNoteId: edge.sourceNote?.id || edge.sourceNoteId,
@@ -159,7 +159,7 @@ export const boardService = {
         strokeWidth: 2
       });
 
-      const response = await api.post(`/boards/${boardId}/edges`, {
+      const response = await api.post(`api/boards/${boardId}/edges`, {
         sourceNoteId: Number(edgeData.sourceNoteId),
         targetNoteId: Number(edgeData.targetNoteId),
         type: 'default',
@@ -185,7 +185,7 @@ export const boardService = {
   },
 
   deleteEdge: async (boardId, edgeId) => {
-    await api.delete(`/boards/${boardId}/edges/${edgeId}`);
+    await api.delete(`api/boards/${boardId}/edges/${edgeId}`);
   },
 
   async getAIResponse(messages) {
