@@ -97,7 +97,7 @@ export const boardService = {
     
     try {
       console.log('Making delete request for board:', boardId);
-      const response = await api.delete(`/boards/${boardId}`);
+      const response = await api.delete(`/api/boards/${boardId}`);
       console.log('Delete response:', response);
       return response.data;
     } catch (error) {
@@ -106,7 +106,7 @@ export const boardService = {
         data: error.response?.data,
         message: error.message,
         boardId: boardId,
-        endpoint: `/boards/${boardId}`
+        endpoint: `/api/boards/${boardId}`
       });
       throw error;
     }
