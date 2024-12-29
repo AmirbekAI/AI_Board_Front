@@ -397,6 +397,14 @@ const StickyNoteBoardContent = () => {
     });
   }, [boardId]);
 
+  useEffect(() => {
+    console.log('Current nodes state:', nodes);
+  }, [nodes]);
+
+  useEffect(() => {
+    console.log('Current edges state:', edges);
+  }, [edges]);
+
   return (
     <HandlerContext.Provider value={handlers}>
       <FlowWrapper>
