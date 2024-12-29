@@ -16,6 +16,7 @@ import 'reactflow/dist/style.css';
 import styled from '@emotion/styled';
 import StickyNoteNode from './StickyNoteNode';
 import AIChatPanel from './AIChatPanel';
+import { calculateNodePositions } from '../utils/layoutUtils';
 
 const FlowWrapper = styled.div`
   width: 100vw;
@@ -216,24 +217,18 @@ const StickyNoteBoardContent = () => {
       
       console.log('Handling graph data:', data);
       if (data && data.nodes) {
-        // Calculate positions if not provided
-        const formattedNodes = data.nodes.map((node, index) => {
-          const position = node.position || {
-            x: 100 + (index % 3) * 300,  // Grid layout: 3 columns
-            y: 100 + Math.floor(index / 3) * 200  // 200px vertical spacing
-          };
-          
-          return {
-            ...node,
-            type: 'stickyNote',
-            position,
-            data: {
-              ...node.data,
-              onColorChange: handlers.onColorChange,
-              onTextChange: handlers.onTextChange
-            }
-          };
-        });
+        // Use layoutUtils to calculate positions
+        const nodesWithPositions = calculateNodePositions(data.nodes);
+        
+        const formattedNodes = nodesWithPositions.map(node => ({
+          ...node,
+          type: 'stickyNote',
+          data: {
+            ...node.data,
+            text: node.data.text,
+            color: node.data.color || '#ffd700'
+          }
+        }));
         
         console.log('Setting formatted nodes:', formattedNodes);
         setNodes(formattedNodes);
@@ -242,9 +237,9 @@ const StickyNoteBoardContent = () => {
       if (data && data.edges) {
         const formattedEdges = data.edges.map(edge => ({
           ...edge,
-          type: 'default',  // Ensure default edge type
-          animated: true,   // Add animation
-          style: { stroke: '#000000' }  // Consistent style
+          type: 'default',
+          animated: true,
+          style: { stroke: '#000000' }
         }));
         
         console.log('Setting edges:', formattedEdges);
@@ -256,7 +251,7 @@ const StickyNoteBoardContent = () => {
     } finally {
       setLoading(false);
     }
-  }, [handlers, setNodes, setEdges]);
+  }, [setNodes, setEdges]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({
