@@ -215,7 +215,12 @@ const StickyNoteBoardContent = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Received AI graph data in StickyNoteBoard:', data);
+      console.log('5. Received in handleGraphData:', data);
+      
+      // Clear existing nodes and edges first
+      setNodes([]);
+      setEdges([]);
+      
       if (!data || !data.nodes) {
         console.error('Invalid graph data structure:', data);
         setError('Invalid graph data received');
@@ -224,12 +229,12 @@ const StickyNoteBoardContent = () => {
 
       // Use arrangeNodes from layoutUtils
       const arrangedData = arrangeNodes(data);
-      console.log('Arranged data:', arrangedData);
+      console.log('6. After arrangeNodes:', arrangedData);
       
       const formattedNodes = arrangedData.nodes.map(node => ({
         ...node,
         type: 'stickyNote',
-        position: node.position || { x: 0, y: 0 }, // Ensure position exists
+        position: node.position || { x: 0, y: 0 },
         data: {
           ...node.data,
           text: node.data.text,
@@ -239,25 +244,27 @@ const StickyNoteBoardContent = () => {
         }
       }));
       
-      console.log('Setting formatted nodes:', formattedNodes);
-      setNodes(formattedNodes);
+      console.log('7. Formatted nodes about to be set:', formattedNodes);
       
-      if (arrangedData.edges) {
-        const formattedEdges = arrangedData.edges.map(edge => ({
-          ...edge,
-          type: 'default',
-          animated: true,
-          style: { stroke: '#000000' }
-        }));
-        
-        console.log('Setting edges:', formattedEdges);
-        setEdges(formattedEdges);
-      }
-
-      // Force a re-render of the flow
+      // Set nodes and edges with a small delay
       setTimeout(() => {
-        reactFlowInstance.fitView();
-      }, 100);
+        setNodes(formattedNodes);
+        if (arrangedData.edges) {
+          const formattedEdges = arrangedData.edges.map(edge => ({
+            ...edge,
+            type: 'default',
+            animated: true,
+            style: { stroke: '#000000' }
+          }));
+          setEdges(formattedEdges);
+        }
+        
+        // Fit view after a small delay to ensure nodes are rendered
+        setTimeout(() => {
+          reactFlowInstance.fitView();
+        }, 100);
+      }, 0);
+
     } catch (err) {
       console.error('Error handling graph data:', err);
       setError('Failed to process graph data');

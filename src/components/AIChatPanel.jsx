@@ -298,18 +298,21 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
       setMessages(prev => [...prev, { role: 'user', content: input }]);
       setInput('');
       
-      console.log('Sending message to AI:', input);
-      const graphData = await boardService.getAIResponse([{ role: 'user', content: input }]);
-      console.log('Received graph data:', graphData);
+      console.log('1. Sending message to AI:', input);
+      const response = await boardService.getAIResponse([{ role: 'user', content: input }]);
+      console.log('2. Raw AI Response:', response);
+      
+      // Make sure we're getting the graph data correctly
+      const graphData = response.graphData || response;
+      console.log('3. Graph data to be processed:', graphData);
       
       if (graphData && graphData.nodes && graphData.edges) {
-        console.log('Processing graph data with nodes:', graphData.nodes.length);
+        console.log('4. Calling onGraphDataReceived with:', graphData);
         onGraphDataReceived(graphData);
       } else {
-        console.error('Invalid graph data received:', graphData);
+        console.error('Invalid graph data structure:', graphData);
       }
 
-      // Add AI response to messages
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: 'Generated a concept map based on your input.' 
