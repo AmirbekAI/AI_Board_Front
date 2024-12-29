@@ -308,6 +308,13 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
       } else {
         console.error('Invalid graph data received:', graphData);
       }
+
+      // Add AI response to messages
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Generated a concept map based on your input.' 
+      }]);
+
     } catch (error) {
       console.error('Error in chat:', error);
       setError('Failed to get AI response');

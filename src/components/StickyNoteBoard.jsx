@@ -215,43 +215,53 @@ const StickyNoteBoardContent = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Handling graph data:', data);
-      if (data && data.nodes) {
-        // Use arrangeNodes from layoutUtils
-        const arrangedData = arrangeNodes(data);
-        
-        const formattedNodes = arrangedData.nodes.map(node => ({
-          ...node,
-          type: 'stickyNote',
-          data: {
-            ...node.data,
-            text: node.data.text,
-            color: node.data.color || '#ffd700'
-          }
+      console.log('Received AI graph data in StickyNoteBoard:', data);
+      if (!data || !data.nodes) {
+        console.error('Invalid graph data structure:', data);
+        setError('Invalid graph data received');
+        return;
+      }
+
+      // Use arrangeNodes from layoutUtils
+      const arrangedData = arrangeNodes(data);
+      console.log('Arranged data:', arrangedData);
+      
+      const formattedNodes = arrangedData.nodes.map(node => ({
+        ...node,
+        type: 'stickyNote',
+        data: {
+          ...node.data,
+          text: node.data.text,
+          color: node.data.color || '#ffd700',
+          onColorChange: handlers.onColorChange,
+          onTextChange: handlers.onTextChange
+        }
+      }));
+      
+      console.log('Setting formatted nodes:', formattedNodes);
+      setNodes(formattedNodes);
+      
+      if (arrangedData.edges) {
+        const formattedEdges = arrangedData.edges.map(edge => ({
+          ...edge,
+          type: 'default',
+          animated: true,
+          style: { stroke: '#000000' }
         }));
         
-        console.log('Setting formatted nodes:', formattedNodes);
-        setNodes(formattedNodes);
-        
-        if (arrangedData.edges) {
-          const formattedEdges = arrangedData.edges.map(edge => ({
-            ...edge,
-            type: 'default',
-            animated: true,
-            style: { stroke: '#000000' }
-          }));
-          
-          console.log('Setting edges:', formattedEdges);
-          setEdges(formattedEdges);
-        }
+        console.log('Setting edges:', formattedEdges);
+        setEdges(formattedEdges);
       }
+
+      // Force a re-render of the flow
+      reactFlowInstance.fitView();
     } catch (err) {
       console.error('Error handling graph data:', err);
       setError('Failed to process graph data');
     } finally {
       setLoading(false);
     }
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, handlers, reactFlowInstance]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({
@@ -412,7 +422,10 @@ const StickyNoteBoardContent = () => {
             pannable
           />
         </ReactFlow>
-        <AIChatPanel onGraphDataReceived={handleGraphData} />
+        <AIChatPanel 
+          onGraphDataReceived={handleGraphData} 
+          boardId={boardId}
+        />
       </FlowWrapper>
     </HandlerContext.Provider>
   );
