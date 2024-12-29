@@ -173,14 +173,12 @@ const StickyNoteBoardContent = () => {
       const currentNode = nodes.find(n => n.id === nodeId);
       if (!currentNode) return;
 
-      // Update local state first
       setNodes(nds => nds.map(node => 
         node.id === nodeId 
           ? { ...node, data: { ...node.data, text: newText } }
           : node
       ));
 
-      // Then update in backend
       await boardService.updateNote(boardId, Number(nodeId), {
         content: newText,
         color: currentNode.data.color,
@@ -334,14 +332,11 @@ const StickyNoteBoardContent = () => {
             y: parseFloat(note.positionY) || 0 
           },
           data: { 
-            text: note.content || '', // Ensure text is loaded from content
-            color: note.color || '#ffd700',
-            onColorChange: (color) => handleNodeColorChange(note.id.toString(), color),
-            onTextChange: (text) => handleNodeTextChange(note.id.toString(), text)
+            text: note.content,
+            color: note.color
           }
         }));
-        
-        console.log('Formatted nodes with text:', formattedNodes); // Debug log
+        console.log('Formatted nodes:', formattedNodes); // Debug log
         setNodes(formattedNodes);
 
         const edges = await boardService.getBoardEdges(boardId);
@@ -362,7 +357,7 @@ const StickyNoteBoardContent = () => {
     };
 
     loadBoardData();
-  }, [boardId, handleNodeColorChange, handleNodeTextChange]);
+  }, [boardId]);
 
   // Add onConnect handler if it's missing
   const onConnect = useCallback(async (params) => {
