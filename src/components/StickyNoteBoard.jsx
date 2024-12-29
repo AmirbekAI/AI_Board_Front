@@ -16,7 +16,7 @@ import 'reactflow/dist/style.css';
 import styled from '@emotion/styled';
 import StickyNoteNode from './StickyNoteNode';
 import AIChatPanel from './AIChatPanel';
-import { calculateNodePositions } from '../utils/layoutUtils';
+import { arrangeNodes } from '../utils/layoutUtils';
 
 const FlowWrapper = styled.div`
   width: 100vw;
@@ -217,10 +217,10 @@ const StickyNoteBoardContent = () => {
       
       console.log('Handling graph data:', data);
       if (data && data.nodes) {
-        // Use layoutUtils to calculate positions
-        const nodesWithPositions = calculateNodePositions(data.nodes);
+        // Use arrangeNodes from layoutUtils
+        const arrangedData = arrangeNodes(data);
         
-        const formattedNodes = nodesWithPositions.map(node => ({
+        const formattedNodes = arrangedData.nodes.map(node => ({
           ...node,
           type: 'stickyNote',
           data: {
@@ -232,18 +232,18 @@ const StickyNoteBoardContent = () => {
         
         console.log('Setting formatted nodes:', formattedNodes);
         setNodes(formattedNodes);
-      }
-      
-      if (data && data.edges) {
-        const formattedEdges = data.edges.map(edge => ({
-          ...edge,
-          type: 'default',
-          animated: true,
-          style: { stroke: '#000000' }
-        }));
         
-        console.log('Setting edges:', formattedEdges);
-        setEdges(formattedEdges);
+        if (arrangedData.edges) {
+          const formattedEdges = arrangedData.edges.map(edge => ({
+            ...edge,
+            type: 'default',
+            animated: true,
+            style: { stroke: '#000000' }
+          }));
+          
+          console.log('Setting edges:', formattedEdges);
+          setEdges(formattedEdges);
+        }
       }
     } catch (err) {
       console.error('Error handling graph data:', err);
