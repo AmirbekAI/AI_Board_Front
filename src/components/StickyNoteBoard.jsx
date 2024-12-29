@@ -103,8 +103,12 @@ const defaultEdgeOptions = {
 const HandlerContext = React.createContext(null);
 
 // Create a wrapper component for StickyNoteNode that uses the context
-const StickyNoteWrapper = (props) => {
+const StickyNoteWrapper = memo((props) => {
   const handlers = useContext(HandlerContext);
+  if (!handlers) {
+    console.error('Handlers not found in context');
+    return null;
+  }
   return (
     <StickyNoteNode
       {...props}
@@ -112,12 +116,35 @@ const StickyNoteWrapper = (props) => {
       onTextChange={(text) => handlers.onTextChange(props.id, text)}
     />
   );
-};
+});
 
 // Define nodeTypes outside of the component
 const nodeTypes = {
-  stickyNote: memo(StickyNoteWrapper)
+  stickyNote: StickyNoteWrapper
 };
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error('Error in component:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div>Something went wrong. Please refresh the page.</div>;
+    }
+
+    return this.props.children;
+  }
+}
 
 const StickyNoteBoardContent = () => {
   const { boardId } = useParams();
@@ -126,6 +153,7 @@ const StickyNoteBoardContent = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [error, setError] = useState(null);
   const reactFlowInstance = useReactFlow();
+  const [loading, setLoading] = useState(false);
 
   // Define handlers first
   const handleNodeTextChange = useCallback(async (nodeId, newText) => {
@@ -174,29 +202,61 @@ const StickyNoteBoardContent = () => {
     }
   }, [boardId, nodes]);
 
+  // Create handlers object
+  const handlers = useMemo(() => ({
+    onColorChange: handleNodeColorChange,
+    onTextChange: handleNodeTextChange
+  }), [handleNodeColorChange, handleNodeTextChange]);
+
   // Then define handleGraphData using the handlers
-  const handleGraphData = useCallback((data) => {
-    console.log('Handling graph data:', data);
-    if (data && data.nodes) {
-      const formattedNodes = data.nodes.map(node => ({
-        ...node,
-        type: 'stickyNote',
-        data: {
-          ...node.data,
-          onColorChange: handleNodeColorChange,
-          onTextChange: handleNodeTextChange
-        }
-      }));
+  const handleGraphData = useCallback(async (data) => {
+    try {
+      setLoading(true);
+      setError(null);
       
-      console.log('Setting formatted nodes:', formattedNodes);
-      setNodes(formattedNodes);
+      console.log('Handling graph data:', data);
+      if (data && data.nodes) {
+        // Calculate positions if not provided
+        const formattedNodes = data.nodes.map((node, index) => {
+          const position = node.position || {
+            x: 100 + (index % 3) * 300,  // Grid layout: 3 columns
+            y: 100 + Math.floor(index / 3) * 200  // 200px vertical spacing
+          };
+          
+          return {
+            ...node,
+            type: 'stickyNote',
+            position,
+            data: {
+              ...node.data,
+              onColorChange: handlers.onColorChange,
+              onTextChange: handlers.onTextChange
+            }
+          };
+        });
+        
+        console.log('Setting formatted nodes:', formattedNodes);
+        setNodes(formattedNodes);
+      }
+      
+      if (data && data.edges) {
+        const formattedEdges = data.edges.map(edge => ({
+          ...edge,
+          type: 'default',  // Ensure default edge type
+          animated: true,   // Add animation
+          style: { stroke: '#000000' }  // Consistent style
+        }));
+        
+        console.log('Setting edges:', formattedEdges);
+        setEdges(formattedEdges);
+      }
+    } catch (err) {
+      console.error('Error handling graph data:', err);
+      setError('Failed to process graph data');
+    } finally {
+      setLoading(false);
     }
-    
-    if (data && data.edges) {
-      console.log('Setting edges:', data.edges);
-      setEdges(data.edges);
-    }
-  }, [handleNodeColorChange, handleNodeTextChange]);
+  }, [handlers, setNodes, setEdges]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({
@@ -325,6 +385,7 @@ const StickyNoteBoardContent = () => {
   return (
     <HandlerContext.Provider value={handlers}>
       <FlowWrapper>
+        {loading && <LoadingSpinner />}
         <ButtonGroup>
           <BackButton onClick={() => navigate('/profile')}>
             Back to Profile
@@ -364,9 +425,11 @@ const StickyNoteBoardContent = () => {
 
 const StickyNoteBoard = () => {
   return (
-    <ReactFlowProvider>
-      <StickyNoteBoardContent />
-    </ReactFlowProvider>
+    <ErrorBoundary>
+      <ReactFlowProvider>
+        <StickyNoteBoardContent />
+      </ReactFlowProvider>
+    </ErrorBoundary>
   );
 };
 
