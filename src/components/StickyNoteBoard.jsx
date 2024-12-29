@@ -127,53 +127,76 @@ const StickyNoteBoardContent = () => {
   const [error, setError] = useState(null);
   const reactFlowInstance = useReactFlow();
 
-  // Create stable handlers
-  const handlers = useMemo(() => ({
-    onTextChange: async (nodeId, newText) => {
-      try {
-        setNodes(nds => nds.map(node => 
-          node.id === nodeId 
-            ? { ...node, data: { ...node.data, text: newText } }
-            : node
-        ));
+  // Define handlers first
+  const handleNodeTextChange = useCallback(async (nodeId, newText) => {
+    try {
+      const currentNode = nodes.find(n => n.id === nodeId);
+      if (!currentNode) return;
 
-        const node = nodes.find(n => n.id === nodeId);
-        if (!node) return;
+      setNodes(nds => nds.map(node => 
+        node.id === nodeId 
+          ? { ...node, data: { ...node.data, text: newText } }
+          : node
+      ));
 
-        await boardService.updateNote(boardId, Number(nodeId), {
-          content: newText,
-          color: node.data.color,
-          positionX: node.position.x,
-          positionY: node.position.y
-        });
-      } catch (err) {
-        setError('Failed to update note text');
-        console.error('Error updating note text:', err);
-      }
-    },
-    onColorChange: async (nodeId, newColor) => {
-      try {
-        setNodes(nds => nds.map(node => 
-          node.id === nodeId 
-            ? { ...node, data: { ...node.data, color: newColor } }
-            : node
-        ));
-
-        const node = nodes.find(n => n.id === nodeId);
-        if (!node) return;
-
-        await boardService.updateNote(boardId, Number(nodeId), {
-          content: node.data.text,
-          color: newColor,
-          positionX: node.position.x,
-          positionY: node.position.y
-        });
-      } catch (err) {
-        setError('Failed to update note color');
-        console.error('Error updating note color:', err);
-      }
+      await boardService.updateNote(boardId, Number(nodeId), {
+        content: newText,
+        color: currentNode.data.color,
+        positionX: currentNode.position.x,
+        positionY: currentNode.position.y
+      });
+    } catch (err) {
+      setError('Failed to update note text');
+      console.error('Error updating note text:', err);
     }
-  }), [boardId, nodes, setNodes]);
+  }, [boardId, nodes]);
+
+  const handleNodeColorChange = useCallback(async (nodeId, newColor) => {
+    try {
+      const currentNode = nodes.find(n => n.id === nodeId);
+      if (!currentNode) return;
+
+      setNodes(nds => nds.map(node => 
+        node.id === nodeId 
+          ? { ...node, data: { ...node.data, color: newColor } }
+          : node
+      ));
+
+      await boardService.updateNote(boardId, Number(nodeId), {
+        content: currentNode.data.text,
+        color: newColor,
+        positionX: currentNode.position.x,
+        positionY: currentNode.position.y
+      });
+    } catch (err) {
+      setError('Failed to update note color');
+      console.error('Error updating note color:', err);
+    }
+  }, [boardId, nodes]);
+
+  // Then define handleGraphData using the handlers
+  const handleGraphData = useCallback((data) => {
+    console.log('Handling graph data:', data);
+    if (data && data.nodes) {
+      const formattedNodes = data.nodes.map(node => ({
+        ...node,
+        type: 'stickyNote',
+        data: {
+          ...node.data,
+          onColorChange: handleNodeColorChange,
+          onTextChange: handleNodeTextChange
+        }
+      }));
+      
+      console.log('Setting formatted nodes:', formattedNodes);
+      setNodes(formattedNodes);
+    }
+    
+    if (data && data.edges) {
+      console.log('Setting edges:', data.edges);
+      setEdges(data.edges);
+    }
+  }, [handleNodeColorChange, handleNodeTextChange]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({
@@ -298,30 +321,6 @@ const StickyNoteBoardContent = () => {
       });
     });
   }, [boardId]);
-
-  // Add handleGraphData function
-  const handleGraphData = useCallback((data) => {
-    console.log('Handling graph data:', data);
-    if (data && data.nodes) {
-      const formattedNodes = data.nodes.map(node => ({
-        ...node,
-        type: 'stickyNote',
-        data: {
-          ...node.data,
-          onColorChange: handleNodeColorChange,
-          onTextChange: handleNodeTextChange
-        }
-      }));
-      
-      console.log('Setting formatted nodes:', formattedNodes);
-      setNodes(formattedNodes);
-    }
-    
-    if (data && data.edges) {
-      console.log('Setting edges:', data.edges);
-      setEdges(data.edges);
-    }
-  }, [handleNodeColorChange, handleNodeTextChange]);
 
   return (
     <HandlerContext.Provider value={handlers}>
