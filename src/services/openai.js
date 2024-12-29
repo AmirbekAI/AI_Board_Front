@@ -104,6 +104,9 @@ Before returning the response:
 
 export const generateGraph = async (text) => {
   try {
+    console.log('Generating graph for text:', text);
+    console.log('OpenAI API Key available:', !!openai.apiKey);
+    
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -119,17 +122,29 @@ export const generateGraph = async (text) => {
       temperature: 0.7,
     });
 
+    console.log('Raw OpenAI response:', response);
     let content = response.choices[0].message.content;
+    
+    console.log('Content before parsing:', content);
     
     if (content.includes('```')) {
       content = content.replace(/```json\n?|\n?```/g, '');
     }
     content = content.trim();
-
+    
+    console.log('Content after cleaning:', content);
+    
     const graphData = JSON.parse(content);
+    console.log('Parsed graph data:', graphData);
+    
     return graphData;
   } catch (error) {
     console.error('Error generating graph:', error);
+    console.error('Error details:', {
+      message: error.message,
+      response: error.response,
+      stack: error.stack
+    });
     throw error;
   }
 }; 
