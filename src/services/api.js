@@ -74,7 +74,7 @@ export const authService = {
 export const boardService = {
   getAllBoards: async () => {
     console.log('Get all boards endpoint:', `${API_BASE_URL}/api/boards`);
-    const response = await api.get('/boards');
+    const response = await api.get('api/boards');
     return response.data;
   },
 
