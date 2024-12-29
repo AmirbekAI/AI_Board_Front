@@ -21,6 +21,33 @@ import {
   ButtonGroup,
   ModalButton
 } from '../styles/ProfilePage.styles';
+import styled from 'styled-components';
+
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    background: #cc0000;
+  }
+`;
+
+const StyledBoardCard = styled(BoardCard)`
+  position: relative;
+
+  &:hover ${DeleteButton} {
+    opacity: 1;
+  }
+`;
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -68,6 +95,18 @@ const ProfilePage = () => {
     navigate('/login');
   };
 
+  const handleDeleteBoard = async (e, boardId) => {
+    e.stopPropagation();
+    
+    try {
+      await boardService.deleteBoard(boardId);
+      setBoards(boards.filter(board => board.id !== boardId));
+    } catch (err) {
+      setError('Failed to delete board');
+      console.error('Error deleting board:', err);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
@@ -88,13 +127,19 @@ const ProfilePage = () => {
           </CreateBoardCard>
           
           {boards.map((board) => (
-            <BoardCard 
+            <StyledBoardCard 
               key={board.id} 
               onClick={() => navigate(`/board/${board.id}`)}
             >
               <BoardTitle>{board.title}</BoardTitle>
               <span>Last edited: {new Date(board.lastEdited).toLocaleDateString()}</span>
-            </BoardCard>
+              <DeleteButton 
+                onClick={(e) => handleDeleteBoard(e, board.id)}
+                aria-label="Delete board"
+              >
+                Delete
+              </DeleteButton>
+            </StyledBoardCard>
           ))}
         </BoardsGrid>
       </MainContent>
