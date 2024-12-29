@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { generateGraph } from './openai';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 console.log('API Configuration:', {
@@ -190,8 +191,8 @@ export const boardService = {
 
   async getAIResponse(messages) {
     try {
-      const response = await api.post('/ai/chat', { messages });
-      return response.data;
+      const graphData = await generateGraph(messages[messages.length - 1].content);
+      return graphData;
     } catch (error) {
       console.error('AI chat error:', error);
       throw error;
