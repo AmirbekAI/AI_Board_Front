@@ -244,6 +244,8 @@ const LoadingDots = styled.span`
 `;
 
 const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
+  console.log('AIChatPanel version 1.0');
+  
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -258,12 +260,13 @@ const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
     scrollToBottom();
   }, [messages]);
 
-  // Debug log when component mounts
   useEffect(() => {
+    console.log('AIChatPanel mounted - v1.0');
     if (debug) {
       console.log('AIChatPanel mounted with props:', {
         hasCallback: !!onGraphDataReceived,
-        boardId
+        boardId,
+        version: '1.0'
       });
     }
   }, [debug, onGraphDataReceived, boardId]);

@@ -148,6 +148,8 @@ class ErrorBoundary extends React.Component {
 }
 
 const StickyNoteBoardContent = () => {
+  console.log('StickyNoteBoard version 1.0'); // Version check
+  
   const { boardId } = useParams();
   const navigate = useNavigate();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -155,6 +157,10 @@ const StickyNoteBoardContent = () => {
   const [error, setError] = useState(null);
   const reactFlowInstance = useReactFlow();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log('StickyNoteBoard mounted - v1.0'); // Version check in useEffect
+  }, []);
 
   // Debug log when component mounts
   useEffect(() => {
