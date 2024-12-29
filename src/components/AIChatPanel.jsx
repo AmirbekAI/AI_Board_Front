@@ -290,6 +290,30 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
     }
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    try {
+      setMessages(prev => [...prev, { role: 'user', content: input }]);
+      setInput('');
+      
+      console.log('Sending message to AI:', input);
+      const graphData = await boardService.getAIResponse([{ role: 'user', content: input }]);
+      console.log('Received graph data:', graphData);
+      
+      if (graphData && graphData.nodes && graphData.edges) {
+        console.log('Processing graph data with nodes:', graphData.nodes.length);
+        onGraphDataReceived(graphData);
+      } else {
+        console.error('Invalid graph data received:', graphData);
+      }
+    } catch (error) {
+      console.error('Error in chat:', error);
+      setError('Failed to get AI response');
+    }
+  };
+
   return (
     <ChatPanel isMinimized={isMinimized}>
       <CircleButton 

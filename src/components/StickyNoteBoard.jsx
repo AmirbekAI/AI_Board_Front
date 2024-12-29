@@ -301,36 +301,27 @@ const StickyNoteBoardContent = () => {
 
   // Add handleGraphData function
   const handleGraphData = useCallback((data) => {
+    console.log('Handling graph data:', data);
     if (data && data.nodes) {
-      setNodes(nds => {
-        const updatedNodes = data.nodes.map(newNode => {
-          const existingNode = nds.find(n => n.id === newNode.id);
-          if (existingNode) {
-            return {
-              ...existingNode,
-              data: {
-                ...existingNode.data,
-                text: newNode.data.text
-              }
-            };
-          }
-          return {
-            ...newNode,
-            type: 'stickyNote',
-            data: {
-              ...newNode.data,
-              onColorChange: handlers.onColorChange,
-              onTextChange: handlers.onTextChange
-            }
-          };
-        });
-        return updatedNodes;
-      });
+      const formattedNodes = data.nodes.map(node => ({
+        ...node,
+        type: 'stickyNote',
+        data: {
+          ...node.data,
+          onColorChange: handleNodeColorChange,
+          onTextChange: handleNodeTextChange
+        }
+      }));
+      
+      console.log('Setting formatted nodes:', formattedNodes);
+      setNodes(formattedNodes);
     }
+    
     if (data && data.edges) {
+      console.log('Setting edges:', data.edges);
       setEdges(data.edges);
     }
-  }, [setNodes, setEdges, handlers.onColorChange, handlers.onTextChange]);
+  }, [handleNodeColorChange, handleNodeTextChange]);
 
   return (
     <HandlerContext.Provider value={handlers}>
