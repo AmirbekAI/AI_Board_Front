@@ -96,17 +96,33 @@ export const boardService = {
     }
     
     try {
-      console.log('Making delete request for board:', boardId);
+      console.log('Starting board deletion process for board:', boardId);
+      
+      // First, delete all edges
+      console.log('Deleting edges for board:', boardId);
+      const edges = await boardService.getBoardEdges(boardId);
+      for (const edge of edges) {
+        await api.delete(`/api/boards/${boardId}/edges/${edge.id}`);
+      }
+      
+      // Then, delete all notes
+      console.log('Deleting notes for board:', boardId);
+      const notes = await boardService.getBoardNotes(boardId);
+      for (const note of notes) {
+        await api.delete(`/api/boards/${boardId}/notes/${note.id}`);
+      }
+      
+      // Finally, delete the board
+      console.log('Deleting board:', boardId);
       const response = await api.delete(`/api/boards/${boardId}`);
-      console.log('Delete response:', response);
+      console.log('Board deletion completed successfully');
       return response.data;
     } catch (error) {
       console.error('Delete board error details:', {
         status: error.response?.status,
         data: error.response?.data,
         message: error.message,
-        boardId: boardId,
-        endpoint: `/api/boards/${boardId}`
+        boardId: boardId
       });
       throw error;
     }
