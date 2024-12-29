@@ -73,14 +73,14 @@ export const authService = {
 // Board services
 export const boardService = {
   getAllBoards: async () => {
-    console.log('Get all boards endpoint:', `${API_BASE_URL}/api/boards`);
+    console.log('Get all boards endpoint:', `${API_BASE_URL}api/boards`);
     const response = await api.get('api/boards');
     return response.data;
   },
 
   createBoard: async (boardData) => {
     console.log('Create board endpoint:', `${API_BASE_URL}/api/boards`);
-    const response = await api.post('api/boards', boardData);
+    const response = await api.post('/api/boards', boardData);
     return response.data;
   },
 
