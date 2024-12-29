@@ -91,8 +91,12 @@ export const boardService = {
   },
 
   deleteBoard: async (boardId) => {
+    if (!boardId) {
+      throw new Error('Board ID is required');
+    }
+    
     try {
-      console.log('Attempting to delete board:', boardId);
+      console.log('Making delete request for board:', boardId);
       const response = await api.delete(`/boards/${boardId}`);
       console.log('Delete response:', response);
       return response.data;
@@ -100,7 +104,9 @@ export const boardService = {
       console.error('Delete board error details:', {
         status: error.response?.status,
         data: error.response?.data,
-        message: error.message
+        message: error.message,
+        boardId: boardId,
+        endpoint: `/boards/${boardId}`
       });
       throw error;
     }

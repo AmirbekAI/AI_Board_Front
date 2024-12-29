@@ -98,9 +98,14 @@ const ProfilePage = () => {
   const handleDeleteBoard = async (e, boardId) => {
     e.stopPropagation();
     
+    if (!window.confirm('Are you sure you want to delete this board?')) {
+      return;
+    }
+    
     try {
       console.log('Deleting board with ID:', boardId);
       const id = typeof boardId === 'string' ? parseInt(boardId, 10) : boardId;
+      console.log('Parsed ID:', id);
       await boardService.deleteBoard(id);
       console.log('Board deleted successfully');
       setBoards(boards.filter(board => board.id !== boardId));
@@ -108,9 +113,11 @@ const ProfilePage = () => {
       console.error('Error deleting board:', {
         message: err.message,
         response: err.response?.data,
-        status: err.response?.status
+        status: err.response?.status,
+        boardId: boardId,
+        parsedId: typeof boardId === 'string' ? parseInt(boardId, 10) : boardId
       });
-      setError('Failed to delete board');
+      setError(`Failed to delete board: ${err.response?.data?.message || err.message}`);
     }
   };
 
