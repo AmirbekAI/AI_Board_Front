@@ -327,7 +327,10 @@ const StickyNoteBoardContent = () => {
         const formattedNodes = notes.map(note => ({
           id: note.id.toString(),
           type: 'stickyNote',
-          position: { x: note.positionX, y: note.positionY },
+          position: { 
+            x: parseFloat(note.positionX) || 0, 
+            y: parseFloat(note.positionY) || 0 
+          },
           data: { 
             text: note.content,
             color: note.color
@@ -337,26 +340,14 @@ const StickyNoteBoardContent = () => {
         setNodes(formattedNodes);
 
         const edges = await boardService.getBoardEdges(boardId);
-        const formattedEdges = edges.map(edge => {
-          const sourceId = edge.sourceNote?.id || edge.sourceNoteId;
-          const targetId = edge.targetNote?.id || edge.targetNoteId;
-
-          if (!sourceId || !targetId) {
-            console.warn('Invalid edge data:', edge);
-            return null;
-          }
-
-          return {
-            id: edge.id.toString(),
-            source: sourceId.toString(),
-            target: targetId.toString(),
-            type: edge.type || 'default',
-            style: edge.style ? JSON.parse(edge.style) : {
-              stroke: '#333333',
-              strokeWidth: 2
-            }
-          };
-        }).filter(Boolean);
+        const formattedEdges = edges.map(edge => ({
+          id: edge.id.toString(),
+          source: edge.sourceNoteId.toString(),
+          target: edge.targetNoteId.toString(),
+          type: 'default',
+          animated: true,
+          style: { stroke: '#000000' }
+        }));
 
         setEdges(formattedEdges);
       } catch (err) {
@@ -393,11 +384,13 @@ const StickyNoteBoardContent = () => {
 
   // Add delete handlers if they're missing
   const onNodesDelete = useCallback((deleted) => {
-    deleted.forEach(node => {
-      boardService.deleteNote(boardId, node.id).catch(err => {
+    deleted.forEach(async (node) => {
+      try {
+        await boardService.deleteNote(boardId, Number(node.id));
+      } catch (err) {
         console.error('Failed to delete note:', err);
         setError('Failed to delete note');
-      });
+      }
     });
   }, [boardId]);
 
@@ -436,6 +429,8 @@ const StickyNoteBoardContent = () => {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodesDelete={onNodesDelete}
+          onNodeDragStop={(e, node) => handleNodeChange(node)}
           nodeTypes={nodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           fitView
