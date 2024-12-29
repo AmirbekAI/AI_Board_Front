@@ -276,7 +276,7 @@ const StickyNoteBoardContent = () => {
 
   // Add addNewNote function
   const addNewNote = useCallback(async () => {
-    const position = getRandomPosition();
+    const position = { x: Math.random() * 500, y: Math.random() * 500 };
     try {
       const newNote = await boardService.createNote(boardId, {
         content: 'New Note',
@@ -404,6 +404,14 @@ const StickyNoteBoardContent = () => {
   return (
     <HandlerContext.Provider value={handlers}>
       <FlowWrapper>
+        <ButtonGroup>
+          <BackButton onClick={() => navigate('/profile')}>
+            Back to Profile
+          </BackButton>
+          <BackButton onClick={addNewNote}>
+            Add New Note
+          </BackButton>
+        </ButtonGroup>
         <ReactFlow
           nodes={nodes}
           edges={edges}
