@@ -100,6 +100,8 @@ const defaultEdgeOptions = {
   }
 };
 
+const proOptions = { hideAttribution: true };
+
 // Create a context for the handlers
 const HandlerContext = React.createContext(null);
 
@@ -433,6 +435,7 @@ const StickyNoteBoardContent = () => {
           onNodeDragStop={(e, node) => handleNodeChange(node)}
           nodeTypes={nodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
+          proOptions={proOptions}
           fitView
         >
           <Background />
