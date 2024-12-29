@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { boardService, authService } from '../services/api';
+import styled from 'styled-components';
 import {
   Container,
   Header,
@@ -21,7 +22,6 @@ import {
   ButtonGroup,
   ModalButton
 } from '../styles/ProfilePage.styles';
-import styled from 'styled-components';
 
 const DeleteButton = styled.button`
   position: absolute;
