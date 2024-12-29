@@ -369,9 +369,27 @@ const StickyNoteBoardContent = () => {
   }, [boardId]);
 
   // Add onConnect handler if it's missing
-  const onConnect = useCallback((params) => {
-    setEdges((eds) => addEdge(params, eds));
-  }, [setEdges]);
+  const onConnect = useCallback(async (params) => {
+    try {
+      // Create the edge in the backend
+      const newEdge = await boardService.createEdge(boardId, {
+        sourceNoteId: params.source,
+        targetNoteId: params.target
+      });
+
+      // Add the edge to the local state
+      setEdges((eds) => addEdge({
+        ...params,
+        id: newEdge.id.toString(),
+        type: 'default',
+        animated: true,
+        style: { stroke: '#000000' }
+      }, eds));
+    } catch (err) {
+      setError('Failed to create connection');
+      console.error('Error creating edge:', err);
+    }
+  }, [boardId, setEdges]);
 
   // Add delete handlers if they're missing
   const onNodesDelete = useCallback((deleted) => {
@@ -417,7 +435,9 @@ const StickyNoteBoardContent = () => {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
           nodeTypes={nodeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
           fitView
         >
           <Background />
