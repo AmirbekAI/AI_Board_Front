@@ -215,11 +215,7 @@ const StickyNoteBoardContent = () => {
       setLoading(true);
       setError(null);
       
-      console.log('5. Received in handleGraphData:', data);
-      
-      // Clear existing nodes and edges first
-      setNodes([]);
-      setEdges([]);
+      console.log('1. Starting handleGraphData with:', data);
       
       if (!data || !data.nodes) {
         console.error('Invalid graph data structure:', data);
@@ -227,46 +223,60 @@ const StickyNoteBoardContent = () => {
         return;
       }
 
+      // Clear existing nodes and edges first
+      console.log('2. Clearing existing nodes and edges');
+      setNodes([]);
+      setEdges([]);
+
       // Use arrangeNodes from layoutUtils
+      console.log('3. Calling arrangeNodes');
       const arrangedData = arrangeNodes(data);
-      console.log('6. After arrangeNodes:', arrangedData);
+      console.log('4. After arrangeNodes:', arrangedData);
       
-      const formattedNodes = arrangedData.nodes.map(node => ({
-        ...node,
-        type: 'stickyNote',
-        position: node.position || { x: 0, y: 0 },
-        data: {
-          ...node.data,
-          text: node.data.text,
-          color: node.data.color || '#ffd700',
-          onColorChange: (color) => handleNodeColorChange(node.id, color),
-          onTextChange: (text) => handleNodeTextChange(node.id, text)
-        }
-      }));
-      
-      console.log('7. Formatted nodes about to be set:', formattedNodes);
-      
-      // Set nodes and edges with a small delay
-      setTimeout(() => {
-        setNodes(formattedNodes);
-        if (arrangedData.edges) {
-          const formattedEdges = arrangedData.edges.map(edge => ({
-            ...edge,
-            type: 'default',
-            animated: true,
-            style: { stroke: '#000000' }
-          }));
-          setEdges(formattedEdges);
-        }
+      // Format nodes with all required properties
+      const formattedNodes = arrangedData.nodes.map(node => {
+        const formattedNode = {
+          id: node.id,
+          type: 'stickyNote',
+          position: node.position,
+          data: {
+            text: node.data.text,
+            color: node.data.color || '#ffd700',
+            hierarchyLevel: node.data.hierarchyLevel,
+            onColorChange: (color) => handleNodeColorChange(node.id, color),
+            onTextChange: (text) => handleNodeTextChange(node.id, text)
+          }
+        };
+        console.log(`5. Formatted node ${node.id}:`, formattedNode);
+        return formattedNode;
+      });
+
+      console.log('6. Setting formatted nodes:', formattedNodes);
+      setNodes(formattedNodes);
+
+      if (arrangedData.edges) {
+        const formattedEdges = arrangedData.edges.map(edge => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          type: 'default',
+          animated: true,
+          style: { stroke: '#000000' }
+        }));
         
-        // Fit view after a small delay to ensure nodes are rendered
-        setTimeout(() => {
-          reactFlowInstance.fitView();
-        }, 100);
-      }, 0);
+        console.log('7. Setting formatted edges:', formattedEdges);
+        setEdges(formattedEdges);
+      }
+
+      // Fit view after a small delay to ensure nodes are rendered
+      console.log('8. Scheduling fitView');
+      setTimeout(() => {
+        console.log('9. Executing fitView');
+        reactFlowInstance.fitView();
+      }, 100);
 
     } catch (err) {
-      console.error('Error handling graph data:', err);
+      console.error('Error in handleGraphData:', err);
       setError('Failed to process graph data');
     } finally {
       setLoading(false);
@@ -397,12 +407,13 @@ const StickyNoteBoardContent = () => {
     });
   }, [boardId]);
 
+  // Add monitoring effects
   useEffect(() => {
-    console.log('Current nodes state:', nodes);
+    console.log('Nodes state updated:', nodes);
   }, [nodes]);
 
   useEffect(() => {
-    console.log('Current edges state:', edges);
+    console.log('Edges state updated:', edges);
   }, [edges]);
 
   return (
