@@ -80,7 +80,7 @@ export const boardService = {
   },
 
   createBoard: async (boardData) => {
-    console.log('Create board endpoint:', `${API_BASE_URL}/api/boards`);
+    
     const response = await api.post('/api/boards', boardData);
     return response.data;
   },
@@ -91,7 +91,19 @@ export const boardService = {
   },
 
   deleteBoard: async (boardId) => {
-    await api.delete(`api/boards/${boardId}`);
+    try {
+      console.log('Attempting to delete board:', boardId);
+      const response = await api.delete(`/boards/${boardId}`);
+      console.log('Delete response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Delete board error details:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
   },
 
   getBoardNotes: async (boardId) => {
