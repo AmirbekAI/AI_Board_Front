@@ -304,39 +304,59 @@ const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
   };
 
   const handleSubmit = async (e) => {
+    console.log('1. Submit handler starting');
     e.preventDefault();
     if (!input.trim()) return;
 
     try {
-      console.log('Submit handler called');
+      console.log('2. Inside try block');
       setMessages(prev => [...prev, { role: 'user', content: input }]);
       setInput('');
       
+      console.log('3. About to call getAIResponse');
       const response = await boardService.getAIResponse([{ role: 'user', content: input }]);
-      console.log('AI Response received:', response);
+      console.log('4. AI Response:', response);
       
-      const graphData = response.graphData || response;
-      console.log('Graph data extracted:', graphData);
-      
-      if (graphData && graphData.nodes && graphData.edges) {
-        console.log('Attempting to call onGraphDataReceived');
-        if (typeof onGraphDataReceived !== 'function') {
-          console.error('onGraphDataReceived is not a function!', onGraphDataReceived);
-          return;
-        }
-        
-        try {
-          await onGraphDataReceived(graphData);
-          console.log('onGraphDataReceived called successfully');
-        } catch (callbackError) {
-          console.error('Error in onGraphDataReceived:', callbackError);
-        }
+      if (!response) {
+        throw new Error('No response from AI service');
       }
 
+      const graphData = response.graphData || response;
+      console.log('5. Graph data:', graphData);
+      
+      if (!graphData) {
+        throw new Error('No graph data in response');
+      }
+
+      if (!graphData.nodes || !graphData.edges) {
+        throw new Error('Invalid graph data structure');
+      }
+
+      console.log('6. About to call onGraphDataReceived');
+      if (typeof onGraphDataReceived !== 'function') {
+        throw new Error(`onGraphDataReceived is not a function: ${typeof onGraphDataReceived}`);
+      }
+
+      await onGraphDataReceived(graphData);
+      console.log('7. Successfully called onGraphDataReceived');
+
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
+      console.error('Error in handleSubmit:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      setError('Failed to process AI response: ' + error.message);
     }
   };
+
+  useEffect(() => {
+    const handleError = (event) => {
+      console.error('Global error caught:', event.error);
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
 
   return (
     <ChatPanel isMinimized={isMinimized}>
