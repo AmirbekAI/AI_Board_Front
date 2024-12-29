@@ -308,12 +308,14 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
       
       if (graphData && graphData.nodes && graphData.edges) {
         console.log('4. About to call onGraphDataReceived');
-        if (typeof onGraphDataReceived !== 'function') {
-          console.error('onGraphDataReceived is not a function:', onGraphDataReceived);
-          return;
+        console.log('onGraphDataReceived type:', typeof onGraphDataReceived);
+        
+        try {
+          await onGraphDataReceived(graphData);
+          console.log('5. Successfully called onGraphDataReceived');
+        } catch (callbackError) {
+          console.error('Error calling onGraphDataReceived:', callbackError);
         }
-        await onGraphDataReceived(graphData);
-        console.log('5. Called onGraphDataReceived successfully');
       } else {
         console.error('Invalid graph data structure:', graphData);
       }
@@ -325,7 +327,8 @@ const AIChatPanel = ({ onGraphDataReceived }) => {
 
     } catch (error) {
       console.error('Error in chat:', error);
-      console.error('Error details:', {
+      console.error('Full error details:', {
+        name: error.name,
         message: error.message,
         stack: error.stack
       });
