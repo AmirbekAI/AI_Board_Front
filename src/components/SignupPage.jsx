@@ -40,17 +40,16 @@ const SignupPage = () => {
         fullName: formData.fullName
       };
 
-      console.log('Attempting registration with:', {
-        email: registrationData.email,
-        fullName: registrationData.fullName
-      });
-
+      console.log('Attempting registration...');
       await authService.register(registrationData);
-      console.log('Registration successful');
       navigate('/login');
     } catch (error) {
-      console.error('Registration failed:', error.message);
-      setError(error.response?.data?.message || 'Failed to register');
+      console.error('Signup error:', error);
+      setError(
+        error.message === 'Request failed with status code 500'
+          ? 'Server error - Please try again later or contact support'
+          : error.message
+      );
     }
   };
 

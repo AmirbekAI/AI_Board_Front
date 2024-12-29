@@ -36,15 +36,25 @@ export const authService = {
 
   register: async (userData) => {
     try {
-      console.log('Making registration request to:', API_BASE_URL + '/auth/register'); // Debug log
-      
-      const response = await api.post('/auth/register', {
-        email: userData.email,
-        password: userData.password,
-        fullName: userData.fullName
+      console.log('Making registration request to:', API_BASE_URL + '/auth/register');
+      console.log('Request payload:', {
+        ...userData,
+        password: '[REDACTED]'
       });
       
-      console.log('Registration response:', response.data); // Debug log
+      const response = await api.post('/auth/register', {
+        username: userData.email, // Try with username if backend expects it
+        email: userData.email,
+        password: userData.password,
+        name: userData.fullName // Try with name if backend expects it
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      console.log('Registration response:', response.data);
       
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);
@@ -52,13 +62,30 @@ export const authService = {
       
       return response.data;
     } catch (error) {
+      // Enhanced error logging
       console.error('Registration error details:', {
         message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
+        response: {
+          data: error.response?.data,
+          status: error.response?.status,
+          statusText: error.response?.statusText
+        },
+        request: {
+          url: error.config?.url,
+          method: error.config?.method,
+          data: error.config?.data,
+          headers: error.config?.headers
+        }
       });
-      throw error;
+      
+      // More descriptive error message
+      const errorMessage = 
+        error.response?.data?.message ||
+        error.response?.data ||
+        (error.response?.status === 500 ? 'Server error - Please try again later' : error.message) ||
+        'Registration failed';
+
+      throw new Error(errorMessage);
     }
   },
 
