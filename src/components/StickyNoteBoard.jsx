@@ -229,12 +229,13 @@ const StickyNoteBoardContent = () => {
       const formattedNodes = arrangedData.nodes.map(node => ({
         ...node,
         type: 'stickyNote',
+        position: node.position || { x: 0, y: 0 }, // Ensure position exists
         data: {
           ...node.data,
           text: node.data.text,
           color: node.data.color || '#ffd700',
-          onColorChange: handlers.onColorChange,
-          onTextChange: handlers.onTextChange
+          onColorChange: (color) => handleNodeColorChange(node.id, color),
+          onTextChange: (text) => handleNodeTextChange(node.id, text)
         }
       }));
       
@@ -254,14 +255,16 @@ const StickyNoteBoardContent = () => {
       }
 
       // Force a re-render of the flow
-      reactFlowInstance.fitView();
+      setTimeout(() => {
+        reactFlowInstance.fitView();
+      }, 100);
     } catch (err) {
       console.error('Error handling graph data:', err);
       setError('Failed to process graph data');
     } finally {
       setLoading(false);
     }
-  }, [setNodes, setEdges, handlers, reactFlowInstance]);
+  }, [setNodes, setEdges, handleNodeColorChange, handleNodeTextChange, reactFlowInstance]);
 
   // Add getRandomPosition helper
   const getRandomPosition = () => ({

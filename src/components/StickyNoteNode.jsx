@@ -80,6 +80,14 @@ const StickyNoteNode = ({ data, isConnectable }) => {
     };
   };
 
+  // Handle color changes
+  const handleColorChange = (color) => {
+    setNoteColor(color);
+    if (data.onColorChange) {
+      data.onColorChange(color);
+    }
+  };
+
   return (
     <NoteWrapper 
       ref={wrapperRef}
@@ -106,7 +114,7 @@ const StickyNoteNode = ({ data, isConnectable }) => {
       {showToolbar && (
         <NoteToolbar
           position={getToolbarPosition()}
-          onColorChange={setNoteColor}
+          onColorChange={handleColorChange}
           onFormatChange={setFormat}
           currentColor={noteColor}
           currentFormat={format}
