@@ -350,6 +350,12 @@ const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
     }
   };
 
+  // Add this to check if the button click is working
+  const handleSendClick = () => {
+    console.log('Send button clicked');
+    handleSubmit({ preventDefault: () => {} });
+  };
+
   useEffect(() => {
     const handleError = (event) => {
       console.error('Global error caught:', event.error);
@@ -402,11 +408,20 @@ const AIChatPanel = ({ onGraphDataReceived, boardId, debug = false }) => {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyPress={(e) => {
+              console.log('Key pressed:', e.key);
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
             placeholder="Describe a concept to visualize..."
             disabled={isLoading}
           />
-          <SendButton onClick={() => handleSendMessage(input)} disabled={isLoading}>
+          <SendButton 
+            onClick={handleSendClick} 
+            disabled={isLoading}
+          >
             {isLoading ? (
               <>Processing<LoadingDots/></>
             ) : (
